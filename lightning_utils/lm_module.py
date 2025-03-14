@@ -77,7 +77,7 @@ class LmKeyClf(L.LightningModule):
             df.to_csv(f'det_test_results.csv')
         else:
             df.to_csv(f'clf_test_results.csv')
-        print(classification_report(self.test_targets, self.test_preds))
+        print(classification_report(self.test_targets, self.test_preds, digits=4))
 
     def training_step(self, batch):
         videos, targets = batch        
