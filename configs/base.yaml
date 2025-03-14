@@ -1,0 +1,47 @@
+seed_everything: true
+trainer:
+  logger:
+    class_path: lightning.pytorch.loggers.CSVLogger
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        patience: 10
+        monitor: val_loss
+  fast_dev_run: false
+  max_epochs: 100
+model:
+  class_path: lightning_utils.lm_module.LmKeyClf
+  init_args:
+    loss_fn_classpath: torch.nn.CrossEntropyLoss
+    loss_fn_init_args: null
+    lr: 0.001
+data:
+  class_path: lightning_utils.lm_datamodule.LmKeyStreamModule
+  init_args:
+    frames_dir: ./datasets/topview/raw_frames
+    landmarks_dir: ./datasets/topview/landmarks
+    labels_dir: ./datasets/topview/labels
+    train_videos:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    val_videos:
+    - 5
+    test_videos:
+    - 6
+    - 7
+    train_windows:
+    - - 3
+      - 4
+    val_windows:
+    - - 3
+      - 4
+    test_windows:
+    - - 3
+      - 4
+    idle_gap: null
+    delay: 3
+    batch_size: 32
+    num_workers: 8

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Typing Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4; /* Light background for better contrast */
+        color: #333; /* Darker text color for readability */
+        margin: 0;
+        padding: 20px;
+      }
+      .text-section {
+        margin-bottom: 40px;
+        padding: 20px;
+        background-color: #fff; /* White background for text sections */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+      }
+      .display-text {
+        
+        min-height: 100px;
+        font-size: 16px;
+        margin-bottom: 10px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid #ccc; /* Border for better visibility */
+        background: #fafafa; /* Slightly off-white background */
+        color: black;
+        overflow-wrap: break-word;
+        display: block;
+        padding: 10px;
+        border-radius: 4px; /* Rounded corners */
+      }
+      .typing-area {
+        width: 100%;
+        height: 100px;
+        font-size: 16px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc; /* Border for better visibility */
+        border-radius: 4px; /* Rounded corners */
+        padding: 10px; /* Padding for better text input */
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
+      }
+      .button {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        display: block;
+        padding: 5px 5px; /* Padding for buttons */
+        background-color: #007bff; /* Bootstrap primary color */
+        color: white;
+        border: none;
+        border-radius: 4px; /* Rounded corners */
+        cursor: pointer;
+        transition: background-color 0.3s; /* Smooth transition */
+      }
+      .button:hover {
+        background-color: #0056b3; /* Darker shade on hover */
+      }
+      #log {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #666; /* Lighter color for logs */
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/Kagami/ffmpeg.js/ffmpeg.min.js"></script>
+    <script src="./text_to_type.js"></script>
+  </head>
+  <body>
+    <h1>Typing Test</h1>
+
+    <div id="text-container"></div>
+    <!-- This will hold all the text sections -->
+
+    <script>
+      const textContainer = document.getElementById("text-container");
+      
+      let allTimings = [];
+
+      // Create typing sections dynamically
+      textsToType.forEach((text, index) => {
+        const textSection = document.createElement("div");
+        textSection.classList.add("text-section");
+
+        const displayText = document.createElement("div");
+        displayText.classList.add("display-text");
+        displayText.setAttribute("contenteditable", false);
+        displayText.setAttribute("role", "textbox");
+        displayText.setAttribute("aria-multiline", "true");
+        displayText.textContent = text;
+
+        const typingArea = document.createElement("textarea");
+        typingArea.classList.add("typing-area");
+        typingArea.setAttribute("placeholder", "Type here...");
+        typingArea.dataset.index = index;
+
+        const videoDiv = document.createElement("h3");
+        videoDiv.innerHTML = `Text ${index + 1}:`;
+        const logDiv = document.createElement("div");
+        logDiv.classList.add("log");
+        logDiv.innerHTML = `<strong> Step 2: Type the text below</strong>`;
+
+        const downloadCsvBtn = document.createElement("button");
+        downloadCsvBtn.textContent = `Download CSV ${index + 1}`;
+        downloadCsvBtn.classList.add("button");
+        downloadCsvBtn.dataset.index = index;
+
+        const downloadTxtBtn = document.createElement("button");
+        downloadTxtBtn.textContent = `Download Input ${index + 1}`;
+        downloadTxtBtn.classList.add("button");
+        downloadTxtBtn.dataset.index = index;
+
+        const clearBtn = document.createElement("button");
+        clearBtn.textContent = `Clear ${index + 1}`;
+        clearBtn.classList.add("button");
+        clearBtn.dataset.index = index;
+        textSection.appendChild(displayText);
+        textSection.appendChild(typingArea);
+        textSection.appendChild(clearBtn);
+        textSection.appendChild(downloadCsvBtn);
+        textSection.appendChild(downloadTxtBtn);
+        textContainer.appendChild(textSection);
+
+        // Initialize timing data for each text section
+        allTimings[index] = [];
+
+        // Add event listener for keydown in each typing area
+        typingArea.addEventListener("keydown", function (event) {
+          const milliseconds = Date.now(); // Capture time in milliseconds
+          let key = formatKey(event);
+
+          if (key) {
+            const log = { key: key, time: milliseconds };
+            allTimings[index].push(log);
+            // logDiv.innerHTML += `<p>Key: ${key}, Time: ${milliseconds} ms</p>`;
+          }
+        });
+
+        // Add event listener for input to update display text
+        typingArea.addEventListener("input", function () {
+          const typedText = typingArea.value;
+          updateDisplayText(displayText, text, typedText);
+        });
+
+        clearBtn.addEventListener("click", function () {
+          typingArea.value = ""; // Clear the typing area
+          updateDisplayText(displayText, text, ""); // Clear the highlighted text
+          logDiv.innerHTML = `<strong>Log for Text ${index + 1}:</strong>`; // Clear the log
+          allTimings[index] = []; // Clear the timing data
+        });
+
+        // Add event listener for CSV download
+        downloadCsvBtn.addEventListener("click", function () {
+          downloadCSV(index);
+        });
+
+        // Add event listener for TXT download
+        downloadTxtBtn.addEventListener("click", function () {
+          downloadTXT(index);
+        });
+      });
+
+      function updateDisplayText(displayElement, referenceText, typedText) {
+        let highlightedText = "";
+        let currentIndex = 0;
+
+        for (let i = 0; i < referenceText.length; i++) {
+          if (
+            currentIndex < typedText.length &&
+            referenceText[i] === typedText[currentIndex]
+          ) {
+            highlightedText += `<span style="color: green;">${referenceText[i]}</span>`;
+            currentIndex++;
+          } else {
+            highlightedText += `<span style="color: red;">${referenceText[i]}</span>`;
+          }
+        }
+
+        displayElement.innerHTML = highlightedText;
+      }
+
+      function formatKey(event) {
+        switch (event.key) {
+          case "Backspace":
+            return "delete";
+          case ".":
+            return "dot";
+          case ",":
+            return "comma";
+          case " ":
+            return "space";
+          default:
+            // Only log a-z
+            return event.key.toLowerCase(); // Normalize to lowercase
+        }
+        // return event.key
+      }
+
+      // Function to generate and download CSV for each text
+      function downloadCSV(index) {
+        let csvContent = "Key,Time (ms)\n";
+        const currentTimings = allTimings[index];
+        currentTimings.forEach((record) => {
+          csvContent += `${record.key},${record.time}\n`;
+        });
+
+        // Create a Blob and trigger a download
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `video_${index}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+
+      // Function to generate and download TXT for user input
+      function downloadTXT(index) {
+        const typedText = document.querySelector(`textarea[data-index="${index}"]`).value;
+        const txtContent = `User Input:\n${typedText}`;
+        const blob = new Blob([txtContent], { type: "text/plain" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `video_${index}.txt`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    </script>
+  </body>
+</html>

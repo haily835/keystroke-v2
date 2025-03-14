@@ -1,0 +1,6 @@
+einops==0.8.0
+lightning==2.4.0
+lightning[pytorch-extra]
+timm==1.0.7
+pandas==1.5.3
+torch_geometric
