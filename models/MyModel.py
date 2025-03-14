@@ -331,7 +331,7 @@ class MyModel(nn.Module):
         x = self.l9(x)
         x = self.l10(x)
         x = self.l11(x)
-        x = self.l12(x)
+        # x = self.l12(x)
         # print(x.shape)
         # N*M,C,T,V
         c_new = x.size(1)
