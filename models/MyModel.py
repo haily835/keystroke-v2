@@ -208,7 +208,7 @@ class unit_gcn(nn.Module):
     def __init__(self, in_channels, out_channels, residual=True):
         super(unit_gcn, self).__init__()    
         self.convs = nn.ModuleList()
-        for i in range(3):
+        for i in range(5):
             self.convs.append(HypergraphConv(in_channels, out_channels))
 
         if residual:
@@ -238,7 +238,7 @@ class unit_gcn(nn.Module):
         hi = get_hi(NM // 2, T).to(x.device)
         reshaped = rearrange(x, 'nm c t v -> (nm t v) c')
         y = None
-        for i in range(3):
+        for i in range(5):
             z = self.convs[i](reshaped, hi)
             y = z + y if y is not None else z
         
