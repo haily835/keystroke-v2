@@ -213,7 +213,7 @@ class unit_gcn(nn.Module):
         y = self.relu(y)
         return y
 
-class TCN_HC_unit(nn.Module):
+class TCN_GAT_unit(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, residual=True, kernel_size=5, dilations=[1,2]):
         super().__init__()
         self.hc = unit_gcn(in_channels=in_channels, out_channels=out_channels, residual=True)
@@ -244,26 +244,26 @@ class TCN_HC_unit(nn.Module):
         x = self.relu(x + res)
         return x
 
-class MyModel(nn.Module):
+class TCNGAT(nn.Module):
     def __init__(self, num_class=40, num_point=21, num_person=2, in_channels=3,
                  drop_out=0):
-        super(MyModel, self).__init__()
+        super(TCNGAT, self).__init__()
 
         self.num_class = num_class
         self.num_point = num_point
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
 
         base_channel = 48
-        self.l1 = TCN_HC_unit(in_channels, base_channel, residual=False)
-        self.l2 = TCN_HC_unit(base_channel, base_channel)
-        self.l3 = TCN_HC_unit(base_channel, base_channel)
-        self.l4 = TCN_HC_unit(base_channel, base_channel)
-        self.l5 = TCN_HC_unit(base_channel, base_channel*2, stride=2)
-        self.l6 = TCN_HC_unit(base_channel*2, base_channel*2)
-        self.l7 = TCN_HC_unit(base_channel*2, base_channel*2)
-        self.l8 = TCN_HC_unit(base_channel*2, base_channel*4, stride=2)
-        self.l9 = TCN_HC_unit(base_channel*4, base_channel*4)
-        self.l10 = TCN_HC_unit(base_channel*4, base_channel*4)
+        self.l1 = TCN_GAT_unit(in_channels, base_channel, residual=False)
+        self.l2 = TCN_GAT_unit(base_channel, base_channel)
+        self.l3 = TCN_GAT_unit(base_channel, base_channel)
+        self.l4 = TCN_GAT_unit(base_channel, base_channel)
+        self.l5 = TCN_GAT_unit(base_channel, base_channel*2, stride=2)
+        self.l6 = TCN_GAT_unit(base_channel*2, base_channel*2)
+        self.l7 = TCN_GAT_unit(base_channel*2, base_channel*2)
+        self.l8 = TCN_GAT_unit(base_channel*2, base_channel*4, stride=2)
+        self.l9 = TCN_GAT_unit(base_channel*4, base_channel*4)
+        self.l10 = TCN_GAT_unit(base_channel*4, base_channel*4)
         # self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
         # self.l12 = TCN_HC_unit(base_channel*4, base_channel*4)
 
@@ -307,6 +307,6 @@ class MyModel(nn.Module):
 
 if __name__ == "__main__":
     # x = torch.rand((32, 3, 8, 21, 2))
-    model = MyModel()
+    model = TCNGAT()
     print(summary(model, (32, 3, 8, 21, 2)))
     # x = model(x)

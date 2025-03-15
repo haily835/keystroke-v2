@@ -5,6 +5,5 @@ from .skateformer import SkateFormer
 from .HyperGT import HyperGT
 from .hdgcn.HDGCN import HDGCN
 from .stgcn.st_gcn import STGCN
-from .MyModel import MyModel
-from .HCTA import SimpleViT
-__all__ = ['resnet10', 'resnet101', 'resnet50', 'CTRGCN', 'InfoGCN', 'SkateFormer', 'HyperGT', 'HDGCN', 'STGCN', 'MyModel', 'SimpleViT']
+from .TCNGAT import TCNGAT
+__all__ = ['resnet10', 'resnet101', 'resnet50', 'CTRGCN', 'InfoGCN', 'SkateFormer', 'HyperGT', 'HDGCN', 'STGCN', 'TCNGAT']
