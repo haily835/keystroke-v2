@@ -300,7 +300,7 @@ class MyModel(nn.Module):
         self.l8 = TCN_HC_unit(base_channel*2, base_channel*4, stride=2)
         self.l9 = TCN_HC_unit(base_channel*4, base_channel*4)
         self.l10 = TCN_HC_unit(base_channel*4, base_channel*4)
-        self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
+        # self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
         # self.l12 = TCN_HC_unit(base_channel*4, base_channel*4)
 
         self.fc = nn.Linear(base_channel*4, num_class)
@@ -330,7 +330,7 @@ class MyModel(nn.Module):
         x = self.l8(x)
         x = self.l9(x)
         x = self.l10(x)
-        x = self.l11(x)
+        # x = self.l11(x)
         # x = self.l12(x)
         # print(x.shape)
         # N*M,C,T,V
