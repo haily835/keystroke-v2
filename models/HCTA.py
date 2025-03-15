@@ -100,7 +100,7 @@ class Transformer(nn.Module):
         return self.norm(x)
 
 class SimpleViT(nn.Module):
-    def __init__(self, image_size=(21, 2), image_patch_size=(3,1), frames=8, frame_patch_size=1, num_classes=40, dim=192, depth=7, heads=4, mlp_dim=192, channels = 3, dim_head = 64):
+    def __init__(self, image_size=(21, 2), image_patch_size=(3,1), frames=8, frame_patch_size=1, num_class=40, dim=192, depth=7, heads=4, mlp_dim=192, channels = 3, dim_head = 64):
         super().__init__()
         image_height, image_width = pair(image_size)
         patch_height, patch_width = pair(image_patch_size)
