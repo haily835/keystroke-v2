@@ -185,17 +185,18 @@ class unit_HCTA(nn.Module):
         self.proj = nn.Linear(in_channels, out_channels)
         
         self.hc = HypergraphConv(in_channels=in_channels, out_channels=out_channels) # return [nodes, outfeatures]
+        
         self.conv = nn.Conv2d(in_channels=8, out_channels=8, kernel_size=(1,1), stride=(1,1))
 
         self.vit = SimpleViT(
             input_dim=out_channels * n_joints,
-            embed_dim=out_channels,
+            embed_dim=out_channels * 8,
             depth=1,
             heads=4,
             mlp_dim=out_channels * n_joints,
         )
 
-        self.fc = nn.Linear(out_channels, out_channels * 8 * 21 * 2)
+        self.fc = nn.Linear(out_channels * 8, out_channels * 8 * 21 * 2)
         self.act = nn.ReLU()
 
     def forward(self, x: torch.Tensor, hi: torch.Tensor) -> torch.Tensor:
@@ -243,14 +244,21 @@ class HCTA(nn.Module):
         super().__init__()
 
         # print(self.hi)
-        self.l1=unit_HCTA(3, n_joints, 8)
-        self.l2=unit_HCTA(8, n_joints, 8)
-        self.l3=unit_HCTA(8, n_joints, 16)
+        self.l1=unit_HCTA(3, n_joints, 4)
+        self.l2=unit_HCTA(4, n_joints, 4)
+        self.l3=unit_HCTA(4, n_joints, 4)
+        self.l4=unit_HCTA(4, n_joints, 8)
+        self.l5=unit_HCTA(8, n_joints, 8)
+        self.l6=unit_HCTA(8, n_joints, 8)
+        self.l7=unit_HCTA(8, n_joints, 8)
+        
+        # self.l2=unit_HCTA(8, n_joints, 8)
+        # self.l3=unit_HCTA(8, n_joints, 16)
 
         
-        self.l4=unit_HCTA(16, n_joints, 16)
-        self.l5=unit_HCTA(16, n_joints, 16)
-        self.l6=unit_HCTA(16, n_joints, 32)
+        # self.l4=unit_HCTA(16, n_joints, 16)
+        # self.l5=unit_HCTA(16, n_joints, 16)
+        # self.l6=unit_HCTA(16, n_joints, 32)
 
         # self.l7=HCTA(32, n_joints, 32)
         # self.l8=HCTA(32, n_joints, 32)
@@ -258,7 +266,7 @@ class HCTA(nn.Module):
         
 
         self.flat = nn.Flatten(1)
-        self.fc = nn.Linear(32*n_joints*num_frames, num_class)
+        self.fc = nn.Linear(8*n_joints*num_frames, num_class)
         nn.init.normal_(self.fc.weight, 0, math.sqrt(2. / num_class))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -269,9 +277,10 @@ class HCTA(nn.Module):
         x = self.l2(x, hi)
         x = self.l3(x, hi)
         x = self.l4(x, hi)
+        
         x = self.l5(x, hi)
         x = self.l6(x, hi)
-        # x = self.l7(x, hi)
+        x = self.l7(x, hi)
         # x = self.l8(x, hi)
         # x = self.l9(x, hi)
         
@@ -283,7 +292,7 @@ class HCTA(nn.Module):
 
 if __name__ == "__main__":
     x = torch.rand((32, 3, 8, 21, 2))
-    model = MyModel(num_class=40,n_joints=42, num_frames=8)
+    model = HCTA(num_class=40,n_joints=42, num_frames=8)
  
     print(summary(model, (32, 3, 8, 21, 2)))
     print(model(x).shape)
