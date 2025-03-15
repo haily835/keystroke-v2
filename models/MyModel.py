@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from torch_geometric.nn import MessagePassing, HypergraphConv
+from torch_geometric.nn import MessagePassing, GATv2Conv
 from einops import rearrange
 import math
 import numpy as np
@@ -97,7 +97,7 @@ class MultiScale_TemporalConv(nn.Module):
             nn.BatchNorm2d(branch_channels),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=(3,1), stride=(stride,1), padding=(1,0)),
-            nn.BatchNorm2d(branch_channels)  # 为什么还要加bn
+            nn.BatchNorm2d(branch_channels) 
         ))
 
         self.branches.append(nn.Sequential(
@@ -129,54 +129,18 @@ class MultiScale_TemporalConv(nn.Module):
         return out
 
 def get_hi(batch_size, num_frames):
-    vertices_per_graph = 42
-    num_graphs = batch_size * num_frames
-    edges_per_graph = 10
+    vertices_per_graph = 21
+    num_graphs = batch_size * num_frames * 2
+    edges_per_graph = 6
 
     # Given incidence matrix for one graph
     incidence_matrix_single = torch.tensor([
-        [1, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        [1, 0, 0, 0, 1, 0],
+        [1, 1, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 1],
+        [1, 0, 0, 1, 0, 0],
+        [1, 0, 0, 0, 1, 0],
+        [0, 1, 1, 0, 0, 1]
     ], dtype=torch.long).T
 
     row_indices, col_indices = incidence_matrix_single.nonzero(as_tuple=True)
@@ -209,7 +173,7 @@ class unit_gcn(nn.Module):
         super(unit_gcn, self).__init__()    
         self.convs = nn.ModuleList()
         for i in range(5):
-            self.convs.append(HypergraphConv(in_channels, out_channels))
+            self.convs.append(GATv2Conv(in_channels, out_channels))
 
         if residual:
             if in_channels != out_channels:
@@ -238,7 +202,7 @@ class unit_gcn(nn.Module):
         hi = get_hi(NM // 2, T).to(x.device)
         reshaped = rearrange(x, 'nm c t v -> (nm t v) c')
         y = None
-        for i in range(5):
+        for i in range(3):
             z = self.convs[i](reshaped, hi)
             y = z + y if y is not None else z
         
@@ -289,7 +253,7 @@ class MyModel(nn.Module):
         self.num_point = num_point
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
 
-        base_channel = 64
+        base_channel = 48
         self.l1 = TCN_HC_unit(in_channels, base_channel, residual=False)
         self.l2 = TCN_HC_unit(base_channel, base_channel)
         self.l3 = TCN_HC_unit(base_channel, base_channel)
