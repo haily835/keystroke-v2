@@ -173,7 +173,7 @@ class unit_gcn(nn.Module):
         super(unit_gcn, self).__init__()    
         self.convs = nn.ModuleList()
         for i in range(5):
-            self.convs.append(GATv2Conv(in_channels, out_channels))
+            self.convs.append(GATv2Conv(in_channels, out_channels, residual=True))
 
         if residual:
             if in_channels != out_channels:
