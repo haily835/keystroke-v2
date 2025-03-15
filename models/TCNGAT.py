@@ -173,7 +173,7 @@ class unit_gcn(nn.Module):
         super(unit_gcn, self).__init__()    
         self.convs = nn.ModuleList()
         for i in range(5):
-            self.convs.append(GATv2Conv(in_channels, out_channels, residual=True))
+            self.convs.append(GATv2Conv(in_channels, out_channels, residual=False))
 
         if residual:
             if in_channels != out_channels:
@@ -263,10 +263,10 @@ class TCNGAT(nn.Module):
         self.l7 = TCN_GAT_unit(base_channel*2, base_channel*2)
         self.l8 = TCN_GAT_unit(base_channel*2, base_channel*4, stride=2)
         self.l9 = TCN_GAT_unit(base_channel*4, base_channel*4)
-        self.l10 = TCN_GAT_unit(base_channel*4, base_channel*4)
+        # self.l10 = TCN_GAT_unit(base_channel*4, base_channel*4)
         # self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
         # self.l12 = TCN_HC_unit(base_channel*4, base_channel*4)
-
+        
         self.fc = nn.Linear(base_channel*4, num_class)
         nn.init.normal_(self.fc.weight, 0, math.sqrt(2. / num_class))
         bn_init(self.data_bn, 1)
@@ -293,7 +293,7 @@ class TCNGAT(nn.Module):
         x = self.l7(x)
         x = self.l8(x)
         x = self.l9(x)
-        x = self.l10(x)
+        # x = self.l10(x)
         # x = self.l11(x)
         # x = self.l12(x)
         # print(x.shape)
