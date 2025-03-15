@@ -121,7 +121,7 @@ class SimpleViT(nn.Module):
         self.transformer = Transformer(dim, depth, heads, dim_head, mlp_dim)
 
         self.to_latent = nn.Identity()
-        self.linear_head = nn.Linear(dim, num_classes)
+        self.linear_head = nn.Linear(dim, num_class)
 
     def forward(self, video):
         *_, h, w, dtype = *video.shape, video.dtype
