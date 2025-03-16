@@ -115,4 +115,9 @@ class LmKeyClf(L.LightningModule):
         print(f"EPOCH {self.current_epoch} val_acc {self.cur_val_acc}")
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr)
+        return torch.optim.SGD(
+            self.parameters(), 
+            momentum=0.9,             # Momentum term (common values: 0.9 or 0.99)
+            weight_decay=1e-4,        # Optional: L2 regularization (weight decay)
+            nesterov=True, 
+            lr=self.lr)
