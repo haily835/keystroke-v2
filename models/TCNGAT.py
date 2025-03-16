@@ -253,7 +253,7 @@ class TCNGAT(nn.Module):
         self.num_point = num_point
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
 
-        base_channel = 48
+        base_channel = 64
         self.l1 = TCN_GAT_unit(in_channels, base_channel, residual=False)
         self.l2 = TCN_GAT_unit(base_channel, base_channel)
         self.l3 = TCN_GAT_unit(base_channel, base_channel)
@@ -263,9 +263,9 @@ class TCNGAT(nn.Module):
         self.l7 = TCN_GAT_unit(base_channel*2, base_channel*2)
         self.l8 = TCN_GAT_unit(base_channel*2, base_channel*4, stride=2)
         self.l9 = TCN_GAT_unit(base_channel*4, base_channel*4)
-        # self.l10 = TCN_GAT_unit(base_channel*4, base_channel*4)
-        # self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
-        # self.l12 = TCN_HC_unit(base_channel*4, base_channel*4)
+        self.l10 = TCN_GAT_unit(base_channel*4, base_channel*4)
+        self.l11 = TCN_GAT_unit(base_channel*4, base_channel*4)
+        self.l12 = TCN_GAT_unit(base_channel*4, base_channel*4)
         
         self.fc = nn.Linear(base_channel*4, num_class)
         nn.init.normal_(self.fc.weight, 0, math.sqrt(2. / num_class))
@@ -293,9 +293,9 @@ class TCNGAT(nn.Module):
         x = self.l7(x)
         x = self.l8(x)
         x = self.l9(x)
-        # x = self.l10(x)
-        # x = self.l11(x)
-        # x = self.l12(x)
+        x = self.l10(x)
+        x = self.l11(x)
+        x = self.l12(x)
         # print(x.shape)
         # N*M,C,T,V
         c_new = x.size(1)
