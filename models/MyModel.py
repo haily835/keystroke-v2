@@ -204,10 +204,55 @@ class unit_tcn(nn.Module):
         return x
 
 
+class unit_gcn(nn.Module):
+    def __init__(self, in_channels, out_channels, residual=True):
+        super(unit_gcn, self).__init__()    
+        self.convs = nn.ModuleList()
+        for i in range(3):
+            self.convs.append(HypergraphConv(in_channels, out_channels))
+
+        if residual:
+            if in_channels != out_channels:
+                self.down = nn.Sequential(
+                    nn.Conv2d(in_channels, out_channels, 1),
+                    nn.BatchNorm2d(out_channels)
+                )
+            else:
+                self.down = lambda x: x
+        else:
+            self.down = lambda x: 0
+        
+        
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                conv_init(m)
+            elif isinstance(m, nn.BatchNorm2d):
+                bn_init(m, 1)
+        bn_init(self.bn, 1e-6)
+
+    def forward(self, x):
+        NM, C, T, V = x.size()
+        hi = get_hi(NM // 2, T).to(x.device)
+        reshaped = rearrange(x, 'nm c t v -> (nm t v) c')
+        y = None
+        for i in range(3):
+            z = self.convs[i](reshaped, hi)
+            y = z + y if y is not None else z
+        
+        y = y.view(NM, -1, T, V)
+
+        y = self.bn(y)
+        y += self.down(x)
+        y = self.relu(y)
+        return y
+
 class TCN_HC_unit(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1, residual=True, adaptive=True, kernel_size=5, dilations=[1,2]):
+    def __init__(self, in_channels, out_channels, stride=1, residual=True, kernel_size=5, dilations=[1,2]):
         super().__init__()
-        self.hc = HypergraphConv(in_channels=in_channels, out_channels=out_channels)
+        self.hc = unit_gcn(in_channels=in_channels, out_channels=out_channels, residual=True)
         self.tcn = MultiScale_TemporalConv(out_channels, out_channels, 
                                            kernel_size=kernel_size, 
                                            stride=stride, 
@@ -225,11 +270,10 @@ class TCN_HC_unit(nn.Module):
 
     def forward(self, x: torch.Tensor,) -> torch.Tensor:
         NM, C, T, V = x.size()
-        hi = get_hi(NM // 2, T).to(x.device)
 
         res = self.residual(x)
-        x = rearrange(x, 'nm c t v -> (nm t v) c')
-        x = self.hc(x, hi)
+       
+        x = self.hc(x)
 
         x = x.view(NM, -1, T, V)
         x = self.tcn(x)
@@ -238,7 +282,7 @@ class TCN_HC_unit(nn.Module):
 
 class MyModel(nn.Module):
     def __init__(self, num_class=40, num_point=21, num_person=2, in_channels=3,
-                 drop_out=0, adaptive=True):
+                 drop_out=0):
         super(MyModel, self).__init__()
 
         self.num_class = num_class
@@ -246,16 +290,18 @@ class MyModel(nn.Module):
         self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
 
         base_channel = 64
-        self.l1 = TCN_HC_unit(in_channels, base_channel, residual=False, adaptive=adaptive)
-        self.l2 = TCN_HC_unit(base_channel, base_channel, adaptive=adaptive)
-        self.l3 = TCN_HC_unit(base_channel, base_channel, adaptive=adaptive)
-        self.l4 = TCN_HC_unit(base_channel, base_channel, adaptive=adaptive)
-        self.l5 = TCN_HC_unit(base_channel, base_channel*2, stride=2, adaptive=adaptive)
-        self.l6 = TCN_HC_unit(base_channel*2, base_channel*2, adaptive=adaptive)
-        self.l7 = TCN_HC_unit(base_channel*2, base_channel*2, adaptive=adaptive)
-        self.l8 = TCN_HC_unit(base_channel*2, base_channel*4, stride=2, adaptive=adaptive)
-        self.l9 = TCN_HC_unit(base_channel*4, base_channel*4, adaptive=adaptive)
-        self.l10 = TCN_HC_unit(base_channel*4, base_channel*4, adaptive=adaptive)
+        self.l1 = TCN_HC_unit(in_channels, base_channel, residual=False)
+        self.l2 = TCN_HC_unit(base_channel, base_channel)
+        self.l3 = TCN_HC_unit(base_channel, base_channel)
+        self.l4 = TCN_HC_unit(base_channel, base_channel)
+        self.l5 = TCN_HC_unit(base_channel, base_channel*2, stride=2)
+        self.l6 = TCN_HC_unit(base_channel*2, base_channel*2)
+        self.l7 = TCN_HC_unit(base_channel*2, base_channel*2)
+        self.l8 = TCN_HC_unit(base_channel*2, base_channel*4, stride=2)
+        self.l9 = TCN_HC_unit(base_channel*4, base_channel*4)
+        self.l10 = TCN_HC_unit(base_channel*4, base_channel*4)
+        # self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
+        # self.l12 = TCN_HC_unit(base_channel*4, base_channel*4)
         self.fc = nn.Linear(base_channel*4, num_class)
         nn.init.normal_(self.fc.weight, 0, math.sqrt(2. / num_class))
         bn_init(self.data_bn, 1)
@@ -283,6 +329,8 @@ class MyModel(nn.Module):
         x = self.l8(x)
         x = self.l9(x)
         x = self.l10(x)
+        # x = self.l11(x)
+        # x = self.l12(x)
         # print(x.shape)
         # N*M,C,T,V
         c_new = x.size(1)
