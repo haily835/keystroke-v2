@@ -6,4 +6,5 @@ from .HyperGT import HyperGT
 from .hdgcn.HDGCN import HDGCN
 from .stgcn.st_gcn import STGCN
 from .TCNGAT import TCNGAT
-__all__ = ['resnet10', 'resnet101', 'resnet50', 'CTRGCN', 'InfoGCN', 'SkateFormer', 'HyperGT', 'HDGCN', 'STGCN', 'TCNGAT']
+from .MyModel import MyModel
+__all__ = ['resnet10', 'resnet101', 'resnet50', 'CTRGCN', 'InfoGCN', 'SkateFormer', 'HyperGT', 'HDGCN', 'STGCN', 'TCNGAT', 'MyModel']
