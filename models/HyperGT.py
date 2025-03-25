@@ -269,8 +269,6 @@ class MHSA(nn.Module):
         self.num_point = num_point
         self.layer = layer
 
-
-
         h1 = A.sum(0)
         h1[h1 != 0] = 1
         h = [None for _ in range(num_point)]
@@ -293,8 +291,6 @@ class MHSA(nn.Module):
         self.rpe = nn.Parameter(torch.zeros((self.hops.max()+1, dim)))
 
         self.w1 = nn.Parameter(torch.zeros(num_heads, head_dim))
-
-
 
         A = A.sum(0)
         A[:, :] = 0
@@ -472,7 +468,7 @@ class TCN_ViT_unit(nn.Module):
 
 class HyperGT(nn.Module):
     def __init__(self, num_class=30, num_point=21, num_person=2, in_channels=3,
-                 drop_out=0, num_of_heads=12, 
+                 drop_out=0, num_of_heads=9, 
                  joint_label=[0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4], 
                  **kwargs):
         super(HyperGT, self).__init__()
