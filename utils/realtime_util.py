@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-from openai import OpenAI
+
 # from configs.api_keys import OPEN_AI
 
 # metrics 
@@ -76,22 +76,62 @@ def remove_consecutive_letters(s):
     
     return result
 
+
+# Function to filter the data based on the thresholds
+def filter_by_threshold(csv_file, threshold, active_threshold):
+    # Load the CSV file into a DataFrame
+    df = pd.read_csv(csv_file)
+    
+    # Define the columns that correspond to probabilities (a to backspace)
+    prob_columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'comma', 'period', 'space', 'backspace']
+    
+    # Iterate through the DataFrame and filter based on thresholds
+    filtered_rows = []
+    for index, row in df.iterrows():
+        # Get the probabilities for the classes (from a to backspace)
+        probabilities = row[prob_columns].values
+        
+        # Find the maximum probability and its index (class)
+        max_prob = max(probabilities)
+        max_class = prob_columns[probabilities.argmax()]
+        
+        # Check if the maximum probability exceeds the threshold and if Active Prob is greater than the active_threshold
+        if max_prob > threshold and row['Active Prob'] > active_threshold:
+            filtered_rows.append(row)
+    
+    # Create a DataFrame from the filtered rows
+    filtered_df = pd.DataFrame(filtered_rows)
+    
+    return filtered_df
+
+id2label = [
+"a", "b", "c", "d", "e", 
+"f", "g", "h", "i", "j", 
+"k", "l", "m", "n", "o", 
+"p", "q", "r", "s", "t", 
+"u", "v", "w", "x", "y", "z", 
+"comma", "period", "space", "backspace",
+"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+]
+
+label2id = {label: idx for idx, label in enumerate(id2label)}
+            
 def process_prediction(result_csv, active_thres = 0.5, key_thres = 0.9):
-    result = pd.read_csv(result_csv)
-    mask = (result['Active Prob'] > active_thres) & (result['Key Prob'] > key_thres)
-    chars = result.loc[mask, 'Key prediction'].tolist()
+    result = filter_by_threshold(result_csv, key_thres, active_thres)
+    # mask = (result['Active Prob'] > active_thres) & (result['Key prediction'] > key_thres)
+    chars = result['Key prediction'].tolist()
     processed = []
 
     i = 0
     while i < len(chars):
         char = chars[i]
-        if char == 'dot':
+        if char == 'period':
             processed.append('.')
         elif char == 'comma': 
             processed.append(',')
         elif char == 'space':
             processed.append(' ')
-        elif char == 'delete':
+        elif char == 'backspace':
             if len(processed):
                 processed.pop()
         else:

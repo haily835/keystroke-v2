@@ -300,8 +300,6 @@ class MyModel(nn.Module):
         self.l8 = TCN_HC_unit(base_channel*2, base_channel*4, stride=2)
         self.l9 = TCN_HC_unit(base_channel*4, base_channel*4)
         self.l10 = TCN_HC_unit(base_channel*4, base_channel*4)
-        # self.l11 = TCN_HC_unit(base_channel*4, base_channel*4)
-        # self.l12 = TCN_HC_unit(base_channel*4, base_channel*4)
         self.fc = nn.Linear(base_channel*4, num_class)
         nn.init.normal_(self.fc.weight, 0, math.sqrt(2. / num_class))
         bn_init(self.data_bn, 1)

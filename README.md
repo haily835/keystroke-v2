@@ -2,24 +2,20 @@
 
 ## Dataset
 - Our dataset in the skeleton format (using MediaPipe) can be found in `datasets` folder.
-- Raw images are available on Kaggle: https://www.kaggle.com/datasets/haily1234/keystroke-recognition-keyvr
+- You can explore the dataset in `dataset_explore.ipynb`
+- Datasets are also available on Kaggle: https://www.kaggle.com/datasets/haily1234/keystroke-recognition-keyvr
 
 ## Training and testing
-
 - keystroke detector to classify idle and typing moments
 - keystroke classifier to identify which key is pressed
-- training 2 models can be found in `main.ipynb`
+- Training and reproduce result for testing of 2 models can be found in `main.ipynb`
 
 ## Demo
-
-
 https://github.com/user-attachments/assets/be02d1f0-9db9-4d98-a339-f56778290c12
-
-
 
 ## Reproduce results
 - config_path: path to yaml file associating with checkpoint (ie. Hyperformer detector: ckpts/HyperGT/det/config.yaml; ckpts/HyperGT/clf/config.yaml)
-- ckpt_path: path to model checkpoint (ie. Hyperformer detector: ckpts/HyperGT/det/epoch=12-step=6929.ckpt; classifier ckpts/HyperGT/clf/epoch=17-step=7722.ckpt)
+- ckpt_path: path to model checkpoint (ie. Hyperformer detector: ckpts/HyperGT/det/dect.ckpt; classifier ckpts/HyperGT/clf/clf.ckpt)
 - accelerator: cpu/gpu/mps
 - test_devices: for CPU, value of test_devices is 1. For GPU or MPS, it depends on the available devices.
 
@@ -34,7 +30,7 @@ https://github.com/user-attachments/assets/be02d1f0-9db9-4d98-a339-f56778290c12
 ## Run the 2 stages on video frames from the pre-train model:
 ```
 !python test.py \
---data_dir ./datasets/KeyVR/landmarks \
+--data_dir ./datasets/KeyVR-v2/landmarks \
 --clf_ckpt {clf_ckpt_path} \
 --det_ckpt {det_ckpt_path} \
 --result_dir stream_results \
@@ -52,4 +48,14 @@ This issue will be further investigated, therefore for now you still need to rec
 ```
 python ./utils/keystroke_recorder.py
 ```
+
+
+## Directory structure
+- `/ckpts`: contains the saved checkpoints of the experiment results
+- `datasets`: contains the skeleton datasets (KeyVR with 30 keys and KeyVR-v2 with 40 keys)
+    - `labels`: the frame number in which a key is pressed.
+    - `landmarks`: the coordinates of hand joints extracted using Mediapipe for all frames in a video
+    - `clf.json`: the label of keys in the dataset
+- `lightning_utils`: Lightning module and dataset
+- `models`: contains the implementation of different skeleton based model and the proposed model
 

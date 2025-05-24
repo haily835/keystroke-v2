@@ -16,7 +16,7 @@ class LmKeyClf(L.LightningModule):
                  loss_fn_classpath: str,
                  loss_fn_init_args: Dict[str, Any] | None ,
                  classes_path: str,
-                 lr: float # learning rate
+                 lr: float = 0.001 # learning rate
                 ):
         super().__init__()
 

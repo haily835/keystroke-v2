@@ -4,3 +4,5 @@ lightning[pytorch-extra]
 timm==1.0.7
 pandas==1.5.3
 torch_geometric
+mediapipe==0.10.18
+torchvision
