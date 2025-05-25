@@ -67,14 +67,14 @@ model:
       num_class: 40
     loss_fn_classpath: torch.nn.CrossEntropyLoss
     loss_fn_init_args: null
-    classes_path: ./datasets/tablet9/clf.json
+    classes_path: ./datasets/KeyVR-v2/clf.json
 data:
   class_path: lightning_utils.lm_datamodule.LmKeyStreamModule
   init_args:
-    frames_dir: ./datasets/tablet9/videos
-    landmarks_dir: ./datasets/tablet9/landmarks
-    labels_dir: ./datasets/tablet9/labels
-    classes_path: ./datasets/tablet9/clf.json
+    frames_dir: ./datasets/KeyVR-v2/videos
+    landmarks_dir: ./datasets/KeyVR-v2/landmarks
+    labels_dir: ./datasets/KeyVR-v2/labels
+    classes_path: ./datasets/KeyVR-v2/clf.json
     train_videos:
     - 5
     - 6
