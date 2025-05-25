@@ -14,6 +14,7 @@
 https://github.com/user-attachments/assets/be02d1f0-9db9-4d98-a339-f56778290c12
 
 ## Reproduce results
+Please take a look at `main.ipynb` to see the command
 - config_path: path to yaml file associating with checkpoint (ie. Hyperformer detector: ckpts/HyperGT/det/config.yaml; ckpts/HyperGT/clf/config.yaml)
 - ckpt_path: path to model checkpoint (ie. Hyperformer detector: ckpts/HyperGT/det/dect.ckpt; classifier ckpts/HyperGT/clf/clf.ckpt)
 - accelerator: cpu/gpu/mps
@@ -58,4 +59,3 @@ python ./utils/keystroke_recorder.py
     - `clf.json`: the label of keys in the dataset
 - `lightning_utils`: Lightning module and dataset
 - `models`: contains the implementation of different skeleton based model and the proposed model
-
